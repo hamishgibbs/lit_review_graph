@@ -1,0 +1,5 @@
+data
+output
+.DS_Store
+*.html
+*.sqlite
