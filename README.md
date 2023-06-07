@@ -1,0 +1,1 @@
+infomap output/infomap/links.csv -s1000 output/infomap --clu
