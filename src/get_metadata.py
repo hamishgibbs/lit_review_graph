@@ -1,63 +1,42 @@
 import json
 import pandas as pd
 import requests_cache
+import logging
 
-# add proper error handling for non 200 responses
+logging.basicConfig(filename='get_metadata.log', level=logging.INFO, filemode='w')
 
-def get_metadata_bibliographic(session, citation, email):
-    url = f"https://api.crossref.org/works?query.bibliographic={citation}&mailto={email}&rows=1"
+def get_paper_metadata(session, id, fields):
+    url = f"https://api.semanticscholar.org/graph/v1/paper/{id}?fields={fields}"
     r = session.get(url)
     if r.status_code == 200:
-        print(f"SUCCESS: {citation}")
-        return r.json()["message"]["items"][0]
-    else:
-        print(f"ERROR: {citation}")
-        return None
-
-def get_metadata_doi(session, doi, email):
-    url = f"https://api.semanticscholar.org/graph/v1/paper/{doi}?mailto={email}"
-    r = session.get(url)
-    if r.status_code == 200:
-        print(f"SUCCESS: {doi}")
+        logging.info(f"{id}")
         return r.json()
     else:
-        print(f"ERROR: {doi}")
-        return None
+        logging.error(f"{id}")
 
-def get_metadata_mult(session, citations, email, getter):
+def get_metadata_mult(session, citations, fields='url,year,title,citations'):
     
     all_metadata = []
 
-    for citation in citations:
-        metadata = getter(session, citation, email)
+    for id in citations:
+        metadata = get_paper_metadata(session, id, fields)
         if metadata:
             all_metadata.append(metadata)
     
     return all_metadata
 
-def build_nodes(metadata):
+def build_nodes(metadata, bibliography_paper_ids):
 
     nodes = []
 
     for citation in metadata:
-        
-        citation = citation["message"]
-
-        title = "" if "title" not in citation or len(citation["title"]) == 0 else citation["title"][0]
-        author_family_names = []
-        if "author" in citation:
-            for author in citation["author"]:
-                if "family" in author:
-                    author_family_names.append(author["family"])
-        author = ",".join(author_family_names)
-        citation_count = citation["is-referenced-by-count"] if "is-referenced-by-count" in citation else 0
-        
+                
         nodes.append({
-            "doi": citation["DOI"],
-            "title": title,
-            "authors": author,
-            "is-referenced-by-count": citation_count,
-            "link": citation["URL"]
+            "paperId": citation["paperId"],
+            "title": citation["title"],
+            "is-referenced-by-count": citation["citationCount"],
+            "url": citation["url"],
+            "group": citation["paperId"] in bibliography_paper_ids,
         })
 
     return nodes
@@ -66,54 +45,49 @@ def build_links(metadata):
 
     links = []
     for citation in metadata:
-        if "message" in citation:
-            citation = citation["message"]
-
-        if "reference" not in citation:
-            continue
-        for reference in citation["reference"]:
-            if "DOI" in reference: # For now, a record must have a DOI
-                links.append({"source": citation["DOI"], "target": reference["DOI"]})
+        for reference in citation["citations"]:
+            links.append({"source": citation["paperId"], "target": reference["paperId"]})
 
     return links
 
-def build_graph(session, bibliography, email):
+def build_graph(session, bibliography):
 
-    bibliography_metadata = get_metadata_mult(session, bibliography, email, get_metadata_bibliographic)
-    
+    # This could be made recursive, to search with arbitrary depth d
+    bibliography_paper_ids = [x["paperId"] for x in get_metadata_mult(session, bibliography) if x]
+
+    bibliography_metadata = get_metadata_mult(session, bibliography_paper_ids)
+
     bibliography_links = build_links(bibliography_metadata)
 
-    references_metadata = get_metadata_mult(session, set([citation["target"] for citation in bibliography_links]), email, get_metadata_doi)
+    references_paper_ids = [x for x in set([citation["target"] for citation in bibliography_links]) if x]
+
+    references_metadata = get_metadata_mult(session, references_paper_ids)
 
     reference_links = build_links(references_metadata)
 
     links = bibliography_links + reference_links
 
-    print(len(links))
+    print(f"Links: {len(links)}")
+    print(f"Nodes: {len(set([x['source'] for x in links if x] + [x['target'] for x in links if x]))}")
     
     node_metadata = get_metadata_mult(session, 
-                                      set([citation["source"] for citation in links] + [citation["target"] for citation in links]), 
-                                      email,
-                                      get_metadata_doi)
+                                      set([x["source"] for x in links if x] + [x["target"] for x in links if x]),
+                                      fields='url,year,title,citationCount')
     
-    print(len(node_metadata))
-    
-    nodes = build_nodes(node_metadata)
+    nodes = build_nodes(node_metadata, bibliography_paper_ids)
     
     return nodes, links
 
 def main():
-
-    email = "ucfahpd@ucl.ac.uk"
 
     session = requests_cache.CachedSession('lit_review_graph_cache')
 
     with open("data/bibliography.txt") as f:
         bibliography = f.readlines()
     
-    bibliography = [citation.strip() for citation in bibliography]
+    bibliography = [f"DOI:{citation.strip()}" for citation in bibliography]
 
-    nodes, links = build_graph(session, bibliography, email)
+    nodes, links = build_graph(session, bibliography)
 
     with open("output/nodes.json", "w") as f:
         json.dump(nodes, f, indent=4)
