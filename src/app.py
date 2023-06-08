@@ -41,7 +41,11 @@ def CitationTable(df, id):
             'overflow': 'auto',
             'textOverflow': 'ellipsis',
         }
-        ])
+        ],
+        style_header={
+            'fontWeight': 'bold',
+            'fontFamily': 'Arial'
+        })
     
 
 def build_graph_from_bibliography(bibliography):
@@ -251,7 +255,9 @@ def main():
 
         return content
 
-    app.run_server()
+    debug = "--debug" in sys.argv
+
+    app.run_server(debug=debug)
 
 if __name__ == '__main__':
     main()
