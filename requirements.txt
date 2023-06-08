@@ -1,3 +1,5 @@
+about-time==4.2.1
+alive-progress==3.1.4
 attrs==23.1.0
 cattrs==23.1.2
 certifi==2023.5.7
@@ -11,6 +13,7 @@ dash-html-components==2.0.0
 dash-table==5.0.0
 exceptiongroup==1.1.1
 Flask==2.2.5
+grapheme==0.6.0
 idna==3.4
 importlib-metadata==6.6.0
 itsdangerous==2.1.2
