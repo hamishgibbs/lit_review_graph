@@ -114,7 +114,7 @@ def get_publications_by_degree(nodes, links):
 
 def get_publications_by_citations(nodes, links):
 
-    nodes = nodes.sort_values(["group", "citationCount"], ascending=False).reset_index()
+    nodes = nodes.sort_values(["citationCount"], ascending=False).reset_index()
 
     nodes["citationCount_cumulative"] = np.cumsum(nodes["citationCount"]) 
     nodes["citationCount_cumulative_prop"] = nodes["citationCount_cumulative"] / np.sum(nodes["citationCount"])
@@ -181,7 +181,7 @@ def main():
                     {
                         'selector': 'node',
                         'style': {
-                            'background-color': 'mapData(group, 0, 1, blue, red)'
+                            'background-color': 'mapData(group, 0, 1, rgb(199, 206, 219), rgb(84, 101, 255))'
                         }
                     }
                 ]
@@ -207,7 +207,7 @@ def main():
                             x="index", 
                             y="citationCount_cumulative", 
                             color="group",
-                            color_discrete_map={0: "blue", 1: "red"},
+                            color_discrete_map={0: "rgb(199, 206, 219)", 1: "rgb(84, 101, 255)"},
                             hover_data={
                                 "citationCount_cumulative": False,
                                 "group": False,
