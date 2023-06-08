@@ -150,6 +150,8 @@ def main():
 
     app = Dash(__name__, external_stylesheets=['/assets/style.css', dbc.themes.BOOTSTRAP])
 
+    app.title = "Literature Review Graph"
+
     app.layout = html.Div([
         html.Link(rel='icon', href='/assets/favicon.ico'),
         dcc.Markdown([
