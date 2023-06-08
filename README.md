@@ -25,10 +25,10 @@ Create a text file with a series of DOIs:
 10.1126/science.286.5439.509
 ```
 
-Run the app and point it to you bibliography:
+Run the app and point it to your bibliography:
 
 ```
-python src/app.py data/bibliography.txt
+python src/app.py bibliography.txt
 ```
 
 ## Limitations
