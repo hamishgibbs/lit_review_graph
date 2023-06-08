@@ -1,0 +1,11 @@
+body {
+    line-height: 1.6;
+    font-size: 18px;
+    max-width: 90%;
+    margin: 40px auto;
+    padding: 0 10px;
+}
+a {
+    color: inherit;
+    text-decoration: underline; 
+}

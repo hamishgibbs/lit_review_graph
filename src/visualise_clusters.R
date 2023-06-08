@@ -18,10 +18,10 @@ communities <- fread("output/infomap/links.clu", skip = 10, col.names = c("node_
 
 nodes[communities, on = c("id" = "node_id"), module := module]
 
-nodes_ordered <- nodes[order(module, -`is-referenced-by-count`)][, module_order := 1:length(`is-referenced-by-count`), by = c("module")]
+nodes_ordered <- nodes[order(module, -citationCount)][, module_order := 1:length(citationCount), by = c("module")]
 
 ggplot(nodes_ordered) + 
-  geom_path(aes(x = module_order, y = `is-referenced-by-count`,
+  geom_path(aes(x = module_order, y = citationCount,
                 color=as.character(module))) + 
   scale_y_continuous(trans="log10") + 
   scale_x_continuous(trans="log10")
@@ -38,8 +38,6 @@ module_network <- links[, .(strength = .N), by = c("source_module", "target_modu
 module_network <- subset(module_network, source_module != target_module)
 n_nodes_per_module <- nodes[, .(n_nodes = .N), by = c("module")]
 n_nodes_per_module[, module := as.character(module)]
-
-module_network[n_nodes_per_module, on = c("module"), module_size := n_nodes]
 
 library(ggraph)
 library(tidygraph)

@@ -3,7 +3,7 @@ import pandas as pd
 import requests_cache
 import logging
 
-logging.basicConfig(filename='get_metadata.log', level=logging.INFO, filemode='w')
+logging.basicConfig(filename='logs/get_metadata.log', level=logging.INFO, filemode='w')
 
 def get_paper_metadata(session, id, fields):
     url = f"https://api.semanticscholar.org/graph/v1/paper/{id}?fields={fields}"
@@ -14,11 +14,11 @@ def get_paper_metadata(session, id, fields):
     else:
         logging.error(f"{id}")
 
-def get_metadata_mult(session, citations, fields='url,year,title,citations'):
+def get_metadata_mult(session, paper_ids, fields='url,year,title,references'):
     
     all_metadata = []
 
-    for id in citations:
+    for id in paper_ids:
         metadata = get_paper_metadata(session, id, fields)
         if metadata:
             all_metadata.append(metadata)
@@ -30,13 +30,28 @@ def build_nodes(metadata, bibliography_paper_ids):
     nodes = []
 
     for citation in metadata:
+
+        if "name" not in citation["journal"].keys():
+            citation["journal"]["name"] = "Unknown"
+        
+        if "authors" not in citation.keys():
+            citation["authors"] = [{"authorId": None, "name": "Unknown"}]
+        
+        if "DOI" not in citation["externalIds"].keys():
+            citation["externalIds"]["DOI"] = None
                 
         nodes.append({
             "paperId": citation["paperId"],
             "title": citation["title"],
-            "is-referenced-by-count": citation["citationCount"],
+            "year": citation["year"],
+            "citationCount": citation["citationCount"],
             "url": citation["url"],
             "group": citation["paperId"] in bibliography_paper_ids,
+            "journal": citation["journal"]["name"],
+            "author_ids": [x["authorId"] for x in citation["authors"]],
+            "author_names": [x["name"] for x in citation["authors"]],
+            "tldr": citation["tldr"],
+            "DOI": citation["externalIds"]["DOI"]
         })
 
     return nodes
@@ -44,35 +59,26 @@ def build_nodes(metadata, bibliography_paper_ids):
 def build_links(metadata):
 
     links = []
-    for citation in metadata:
-        for reference in citation["citations"]:
-            links.append({"source": citation["paperId"], "target": reference["paperId"]})
+    for paper in metadata:
+        for reference in paper["references"]:
+            links.append({"source": paper["paperId"], "target": reference["paperId"]})
 
     return links
 
 def build_graph(session, bibliography):
 
-    # This could be made recursive, to search with arbitrary depth d
     bibliography_paper_ids = [x["paperId"] for x in get_metadata_mult(session, bibliography) if x]
 
     bibliography_metadata = get_metadata_mult(session, bibliography_paper_ids)
 
-    bibliography_links = build_links(bibliography_metadata)
-
-    references_paper_ids = [x for x in set([citation["target"] for citation in bibliography_links]) if x]
-
-    references_metadata = get_metadata_mult(session, references_paper_ids)
-
-    reference_links = build_links(references_metadata)
-
-    links = bibliography_links + reference_links
+    links = build_links(bibliography_metadata)
 
     print(f"Links: {len(links)}")
     print(f"Nodes: {len(set([x['source'] for x in links if x] + [x['target'] for x in links if x]))}")
     
     node_metadata = get_metadata_mult(session, 
                                       set([x["source"] for x in links if x] + [x["target"] for x in links if x]),
-                                      fields='url,year,title,citationCount')
+                                      fields='url,year,title,citationCount,authors,journal,externalIds,tldr')
     
     nodes = build_nodes(node_metadata, bibliography_paper_ids)
     

@@ -5,11 +5,6 @@ suppressPackageStartupMessages({
   library(igraph)
 })
 
-data(MisLinks)
-data(MisNodes)
-
-MisNodes
-
 nodes <- fread("output/nodes.csv")
 links <- fread("output/links.csv")
 
@@ -49,46 +44,80 @@ networkD3::saveNetwork(
                zoom = T,
                charge = -50,
                opacity = 0.8),
-  "Reference Network.html"
+  "output/networkD3/Reference Network.html"
 )
 
-subset(nodes, id == 325)
+subset(nodes, id %in% c(739, 904, 216))
 
-View(links[, .(n_citations = .N), by = c("target")][order(-n_citations)])
-n_citations <- links[, .(n_citations = .N), by = c("source")][order(-n_citations)]
-n_citations[, prop_citations := n_citations / sum(n_citations)]
+g <- as_tbl_graph(links, directed = F)
 
-ggplot(data = n_citations) + 
-  geom_path(aes(x = 1:length(n_citations), y = cumsum(prop_citations)))
+g <- g %>% 
+  activate(nodes) %>% 
+  left_join(nodes, by = c("name" = "paperId")) %>% 
+  mutate(degree = tidygraph::centrality_degree()) %>% 
+  filter(degree > 1)
 
-nodes[, prop_citations := `is-referenced-by-count` / sum(`is-referenced-by-count`)]
+set.seed(1)
+ggraph(g, layout = 'fr') + 
+  geom_edge_fan(alpha=0.9) + 
+  geom_node_point(aes(size = citationCount,
+                      color = group), alpha = 0.2)
 
-ggplot(nodes[order(-`is-referenced-by-count`)]) + 
-  geom_path(aes(x = 1:length(`is-referenced-by-count`), y = cumsum(prop_citations)))
+# What papers not in the bibliography have the highest degree?
+top_degree <- g %>% 
+  activate(nodes) %>% 
+  filter(!group) %>% 
+  arrange(-degree) %>% 
+  pull(title)
 
-g <- igraph::graph_from_data_frame(links)
+# What are the highest citation papers not in the bibliography?
+top_citation <- g %>% 
+  activate(nodes) %>% 
+  filter(!group) %>% 
+  arrange(-citationCount) %>% 
+  pull(title)
 
-clust <- igraph::cluster_infomap(g)
+# What is the overlap in the top n of these? 
+n <- 10
+intersect(top_degree[1:n], top_citation[1:n])
 
-n_nodes <- data.table(clust$membership)[, .(n_nodes = .N), by = c("V1")][order(-n_nodes)]
+# What is the effect on network density with the 
+# removal of each of the references in the bibliography?
+bibliography <- g %>% 
+  activate(nodes) %>% 
+  filter(group) %>% 
+  pull(name)
 
-ggplot(n_nodes) + 
-  geom_path(aes(x = 1:length(n_nodes), y = n_nodes), stat="identity")
+density_contribution <- list()
 
-vertices <- data.table(get.data.frame(g, what="vertices"))
+graph_density <- g %>% activate(edges) %>% igraph::graph.density()
+  
+for (i in 1:length(bibliography)){
+  paperId <- bibliography[i]
+  density <- g %>% 
+    activate(nodes) %>% 
+    filter(name != paperId) %>% 
+    activate(edges) %>% igraph::graph.density()
+  density_contribution[[i]] <- data.frame(
+    paperId,
+    density,
+    title = g %>% activate(nodes) %>% filter(name == paperId) %>% pull(title)
+  )
+}
 
-vertices$cluster <- clust$membership
+density_contribution <- do.call(rbind, density_contribution)
 
-nodes[vertices, on=c("paperId"="name"), membership := cluster]
+ggplot(density_contribution) + 
+  geom_bar(aes(x = title, y = density - graph_density), stat="identity") + 
+  scale_x_discrete(labels = function(x) stringr::str_sub(x, start = 1, end = 30)) +
+  theme(axis.text.x = element_text(angle = 80, hjust = 1))
 
-n_nodes[1:4]
+# What contribution does each paper make to the total citations of the graph? 
+View(nodes[order(-group, -citationCount)])
 
-ggplot(subset(nodes, membership %in% 1:4)[order(-`is-referenced-by-count`)]) + 
-  geom_path(aes(x = 1:length(`is-referenced-by-count`), y = `is-referenced-by-count`, 
-                color=as.character(membership)))
+ggplot(nodes[order(-group, -citationCount)]) + 
+  geom_point(aes(x = 1:length(group), y = cumsum(citationCount) / sum(citationCount), color=group)) + 
+  scale_y_continuous(labels = scales::percent)
 
-
-fwrite(subset(nodes, membership %in% 1:4)[order(-`is-referenced-by-count`)][, head(.SD, 5), by = c("membership")],
-          "~/Downloads/top_citations_per_cluster.csv")
 
 
