@@ -68,6 +68,10 @@ When adding a new paper, `lit_review_graph` may take some time to query the meta
 
 [Semantic Scholar](https://www.semanticscholar.org/) is a great free resource for citation data but information for some papers (particularly older papers) may be missing or incomplete. 
 
-## Contributions
+## Issues
 
-Contributions are welcome. If you encounter an error, please open an [issue](https://github.com/hamishgibbs/lit_review_graph/issues/new/choose) and if possible, include the DOIs used to seed your graph. This will make it easier to identify issues with data coming from Semantic Scholar.
+Contributions are welcome. 
+
+If you encounter an error, please open an [issue](https://github.com/hamishgibbs/lit_review_graph/issues/new/choose) and if possible, include the DOIs used to seed your graph. This will make it easier to identify issues with data coming from Semantic Scholar.
+
+To debug the app, you can also inspect get_metadata.log for any papers that failed to download, or re-download papers by deleting `lit_review_graph_cache.sqlite`. 
