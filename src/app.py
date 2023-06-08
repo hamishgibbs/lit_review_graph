@@ -125,7 +125,10 @@ def get_publications_top_50_perc_citations(nodes):
 
     nodes = nodes.copy(deep=True)
 
-    nodes = nodes[nodes["citationCount_cumulative_prop"] < 0.5]
+    if min(nodes["citationCount_cumulative_prop"]) > 0.5:
+        nodes = nodes.iloc[0:1]
+    else:
+        nodes = nodes[nodes["citationCount_cumulative_prop"] < 0.5]
 
     nodes['title'] = nodes.apply(lambda row: f"[{row['title']}]({row['url']})", axis=1)
 
@@ -223,6 +226,9 @@ def main():
                                 yaxis_title="Cumulative citation count"
                             ).add_vline(
                                 x=nodes_top_50_perc_citations.index[-1], line_width=1, line_dash="dash", line_color="red"
+                            ).update_yaxes(
+                                range=[0, 
+                                       nodes_by_citation['citationCount_cumulative'].max() * 1.01]
                             )
         ),
         dcc.Markdown([

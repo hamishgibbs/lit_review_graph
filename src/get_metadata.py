@@ -91,6 +91,8 @@ def build_graph(session, bibliography):
                                       fields='url,year,title,citationCount,authors,journal,externalIds,tldr')
     
     nodes = build_nodes(node_metadata, bibliography_paper_ids)
+
+    links = [x for x in links if x["source"] in [y["paperId"] for y in nodes] and x["target"] in [y["paperId"] for y in nodes]]
     
     return nodes, links
 

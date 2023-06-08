@@ -60,7 +60,7 @@ http://127.0.0.1:8050/
 
 ## Limitations
 
-`lit_review_graph` searches all of the references of papers in your bibliography and will struggle with a large network. I recommend dividing your references into small groups (5-10 publications) for the most clarity.
+`lit_review_graph` searches all of the references of papers in your bibliography and will struggle with a large network. I recommend dividing your references into small groups (around 5-25 publications) for the most clarity.
 
 When adding a new paper, `lit_review_graph` may take some time to query the metadata for each of the connected references from [Semantic Scholar](https://www.semanticscholar.org/). Requests are cached in `lit_review_graph_cache.sqlite` and start-up will be faster after a paper has been downloaded.
 
