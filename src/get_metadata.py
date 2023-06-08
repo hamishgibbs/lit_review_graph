@@ -4,7 +4,7 @@ import pandas as pd
 import requests_cache
 import logging
 
-logging.basicConfig(filename='logs/get_metadata.log', level=logging.INFO, filemode='w')
+logging.basicConfig(filename='get_metadata.log', level=logging.INFO, filemode='w')
 
 def get_paper_metadata(session, id, fields):
     url = f"https://api.semanticscholar.org/graph/v1/paper/{id}?fields={fields}"
