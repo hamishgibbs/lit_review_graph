@@ -1,12 +1,8 @@
 # Literature Review Graph
 
-Explore your bibliography as a network and find important papers you could have missed.
-
 ## Overview
 
-How many times have you come across an important, highly cited paper and thought: "How could I have missed this??"
-
-`lit_review_graph` is an attempt to find those papers.
+How many times have you come across an important, highly cited paper and thought: "How could I have missed this??" `lit_review_graph` is an attempt to find those papers.
 
 `lit_review_graph` is similar to [ResearchRabbit](https://researchrabbitapp.com/home) or [Connected Papers](https://www.connectedpapers.com/) but runs locally and displays the complete reference network for papers in your bibliography.
 
