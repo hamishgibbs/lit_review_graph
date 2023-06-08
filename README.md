@@ -14,6 +14,8 @@
 
 ![](img/cumulative_citations_screenshot.png)
 
+*Plus: Find the publications that are highly cited and closely connected to papers in your bibliography.*
+
 ## Installation
 
 Clone this repository:
