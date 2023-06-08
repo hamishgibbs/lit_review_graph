@@ -14,7 +14,7 @@
 
 ![](img/cumulative_citations_screenshot.png)
 
-*Plus: Find the publications that are highly cited and closely connected to papers in your bibliography.*
+*PLUS: Find the publications that are highly cited and closely connected to papers in your bibliography.*
 
 ## Installation
 
