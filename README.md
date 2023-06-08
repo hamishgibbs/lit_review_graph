@@ -2,7 +2,7 @@
 
 Explore your bibliography as a network and find important papers you could have missed.
 
-#### Description
+## Overview
 
 Have you ever come accross an important, highly cited paper and thought: "How could I have missed this??"
 
@@ -10,7 +10,7 @@ Have you ever come accross an important, highly cited paper and thought: "How co
 
 `lit_review_graph` is similar to [ResearchRabbit](https://researchrabbitapp.com/home) or [Connected Papers](https://www.connectedpapers.com/) but runs locally and displays all of the references of papers in your bibliography.
 
-### Usage
+## Usage
 
 Create a text file with a series of DOIs:
 
@@ -31,7 +31,7 @@ Run the app and point it to you bibliography:
 python src/app.py data/bibliography.txt
 ```
 
-### Limitations
+## Limitations
 
 `lit_review_graph` searches all of the references of the "seed" publications you provide and will struggle with a large bibliography. I recommend dividing your references into small groups (5-10 publications) for the most clarity.
 
