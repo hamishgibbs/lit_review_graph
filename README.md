@@ -1,12 +1,14 @@
-# lit_review_graph
+# Literature Review Graph
 
 Explore your bibliography as a network and find important papers you could have missed.
 
 #### Description
 
-Do you ever come accross an important, highly cited paper and think: "How could I have missed this?"
+Have you ever come accross an important, highly cited paper and thought: "How could I have missed this??"
 
-It is often difficult to identify. 
+`lit_review_graph` is an attempt to find those papers by looking at the papers cited by the papers you cite, and identifying the important papers that connect your bibliography.
+
+`lit_review_graph` is similar to [ResearchRabbit](https://researchrabbitapp.com/home) or [Connected Papers](https://www.connectedpapers.com/) but runs locally and displays all of the references of papers in your bibliography.
 
 ### Usage
 
@@ -35,8 +37,4 @@ python src/app.py data/bibliography.txt
 
 When adding a new paper, `lit_review_graph` may take some time to query the metadata for each of the connected references [Semantic Scholar](https://www.semanticscholar.org/). Requests are cached in `lit_review_graph_cache.sqlite` and start-up will be faster when you re-run the app.
 
-[Semantic Scholar](https://www.semanticscholar.org/) is a great free source of clean information on the academic citation network but data for some papers (particularly older papers) may be missing or incomplete. 
-
-### Other solutions
-
-`lit_review_graph` is similar to [ResearchRabbit](https://researchrabbitapp.com/home) or [Connected Papers](https://www.connectedpapers.com/) but displays all of the references of papers in your bibliography and runs locally.
+[Semantic Scholar](https://www.semanticscholar.org/) is a great source of free and clean information on the academic citation network but data for some papers (particularly older papers) may be missing or incomplete. 
