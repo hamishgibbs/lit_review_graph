@@ -64,7 +64,7 @@ http://127.0.0.1:8050/
 
 `lit_review_graph` searches all of the references of papers in your bibliography and will struggle with a large network. I recommend dividing your references into small groups (around 5-25 publications) for the most clarity.
 
-When adding a new paper, `lit_review_graph` may take some time to query the metadata for each of the connected references from [Semantic Scholar](https://www.semanticscholar.org/). Requests are cached in `lit_review_graph_cache.sqlite` and start-up will be faster after a paper has been downloaded.
+When adding a new paper, `lit_review_graph` may take some time to query the metadata for each of the connected references from [Semantic Scholar](https://www.semanticscholar.org/). Requests are cached in `lit_review_graph_cache.sqlite` and start-up will be faster after papers have been downloaded.
 
 [Semantic Scholar](https://www.semanticscholar.org/) is a great free resource for citation data but information for some papers (particularly older papers) may be missing or incomplete. 
 
@@ -74,4 +74,4 @@ Contributions are welcome.
 
 If you encounter an error, please open an [issue](https://github.com/hamishgibbs/lit_review_graph/issues/new/choose) and if possible, include the DOIs used to seed your graph. This will make it easier to identify issues with data coming from Semantic Scholar.
 
-To debug the app, you can also inspect get_metadata.log for any papers that failed to download, or re-download papers by deleting `lit_review_graph_cache.sqlite`. 
+To debug the app, you can also inspect `get_metadata.log` for any papers that failed to download, or re-download papers by deleting `lit_review_graph_cache.sqlite`. 
