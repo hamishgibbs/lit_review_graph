@@ -52,6 +52,12 @@ Run the app and point it to your bibliography:
 python src/app.py bibliography.txt
 ```
 
+Navigate to the app in your browser: 
+
+```
+http://127.0.0.1:8050/
+```
+
 ## Limitations
 
 `lit_review_graph` searches all of the references of papers in your bibliography and will struggle with a large network. I recommend dividing your references into small groups (5-10 publications) for the most clarity.

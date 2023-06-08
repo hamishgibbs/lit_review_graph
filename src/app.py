@@ -130,6 +130,7 @@ def get_publications_top_50_perc_citations(nodes):
 def main():
 
     nodes, links = build_graph_from_bibliography(sys.argv[1])
+    print("")
     
     cynodes, cylinks = build_cytoscape(nodes, links)
 
@@ -250,7 +251,7 @@ def main():
 
         return content
 
-    app.run_server(debug=True)
+    app.run_server()
 
 if __name__ == '__main__':
     main()

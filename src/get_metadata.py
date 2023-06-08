@@ -3,6 +3,8 @@ import json
 import pandas as pd
 import requests_cache
 import logging
+from alive_progress import alive_bar
+
 
 logging.basicConfig(filename='get_metadata.log', level=logging.INFO, filemode='w')
 
@@ -19,50 +21,60 @@ def get_metadata_mult(session, paper_ids, fields='url,year,title,references'):
     
     all_metadata = []
 
-    for id in paper_ids:
-        metadata = get_paper_metadata(session, id, fields)
-        if metadata:
-            all_metadata.append(metadata)
-    
+    with alive_bar(len(paper_ids), title="Fetching metadata") as bar:
+        for id in paper_ids:
+            metadata = get_paper_metadata(session, id, fields)
+            if metadata:
+                all_metadata.append(metadata)
+            bar()
+        
     return all_metadata
 
 def build_nodes(metadata, bibliography_paper_ids):
 
     nodes = []
 
-    for citation in metadata:
+    with alive_bar(len(metadata), title="Building nodes") as bar:
+        for citation in metadata:
 
-        if "name" not in citation["journal"].keys():
-            citation["journal"]["name"] = "Unknown"
-        
-        if "authors" not in citation.keys():
-            citation["authors"] = [{"authorId": None, "name": "Unknown"}]
-        
-        if "DOI" not in citation["externalIds"].keys():
-            citation["externalIds"]["DOI"] = None
-                
-        nodes.append({
-            "paperId": citation["paperId"],
-            "title": citation["title"],
-            "year": citation["year"],
-            "citationCount": citation["citationCount"],
-            "url": citation["url"],
-            "group": citation["paperId"] in bibliography_paper_ids,
-            "journal": citation["journal"]["name"],
-            "author_ids": [x["authorId"] for x in citation["authors"]],
-            "author_names": [x["name"] for x in citation["authors"]],
-            "tldr": citation["tldr"],
-            "DOI": citation["externalIds"]["DOI"]
-        })
+            if not citation["journal"]:
+                citation["journal"] = {"name": "Unknown"}
+            else:
+                if "name" not in citation["journal"].keys():
+                    citation["journal"]["name"] = "Unknown"
+                    
+            if "authors" not in citation.keys():
+                citation["authors"] = [{"authorId": None, "name": "Unknown"}]
+            
+            if "DOI" not in citation["externalIds"].keys():
+                citation["externalIds"]["DOI"] = None
+                    
+            nodes.append({
+                "paperId": citation["paperId"],
+                "title": citation["title"],
+                "year": citation["year"],
+                "citationCount": citation["citationCount"],
+                "url": citation["url"],
+                "group": citation["paperId"] in bibliography_paper_ids,
+                "journal": citation["journal"]["name"],
+                "author_ids": [x["authorId"] for x in citation["authors"]],
+                "author_names": [x["name"] for x in citation["authors"]],
+                "tldr": citation["tldr"],
+                "DOI": citation["externalIds"]["DOI"]
+            })
+            bar()
 
     return nodes
 
 def build_links(metadata):
 
     links = []
-    for paper in metadata:
-        for reference in paper["references"]:
-            links.append({"source": paper["paperId"], "target": reference["paperId"]})
+
+    with alive_bar(len(metadata), title="Building links") as bar:
+        for paper in metadata:
+            for reference in paper["references"]:
+                links.append({"source": paper["paperId"], "target": reference["paperId"]})
+            bar()
 
     return links
 
