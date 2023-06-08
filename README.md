@@ -10,6 +10,23 @@ How many times have you come across an important, highly cited paper and thought
 
 `lit_review_graph` is similar to [ResearchRabbit](https://researchrabbitapp.com/home) or [Connected Papers](https://www.connectedpapers.com/) but runs locally and displays the complete reference network for the papers in your bibliography.
 
+## Installation
+
+Clone this repository:
+
+```
+git clone https://github.com/hamishgibbs/lit_review_graph.git
+cd lit_review_graph
+```
+
+Create a new virtual environment and install required dependencies:
+
+```
+python -m venv env
+source env/bin/activate 
+pip install -r requirements.txt
+```
+
 ## Usage
 
 Create a text file with a series of DOIs:
