@@ -1,3 +1,4 @@
+import sys
 import json
 import pandas as pd
 import requests_cache
@@ -88,28 +89,22 @@ def main():
 
     session = requests_cache.CachedSession('lit_review_graph_cache')
 
-    with open("data/bibliography.txt") as f:
+    with open(sys.argv[1]) as f:
         bibliography = f.readlines()
     
     bibliography = [f"DOI:{citation.strip()}" for citation in bibliography]
 
     nodes, links = build_graph(session, bibliography)
 
-    with open("output/nodes.json", "w") as f:
+    with open(f"{sys.argv[2]}/nodes.json", "w") as f:
         json.dump(nodes, f, indent=4)
     
-    with open("output/links.json", "w") as f:
+    with open(f"{sys.argv[2]}/links.json", "w") as f:
         json.dump(links, f, indent=4)
 
-    pd.DataFrame(nodes).to_csv("output/nodes.csv", index=False)
-    pd.DataFrame(links).to_csv("output/links.csv", index=False)
+    pd.DataFrame(nodes).to_csv(f"{sys.argv[2]}/nodes.csv", index=False)
+    pd.DataFrame(links).to_csv(f"{sys.argv[2]}/links.csv", index=False)
     
     
 if __name__ == "__main__":
     main()
-
-# "DOI"
-# "title"
-# "author" <- all authors (needs to be formatted)
-# "reference" <- all references
-# "is-referenced-by-count" <- number of articles citing this article

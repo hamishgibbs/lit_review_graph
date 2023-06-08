@@ -10,6 +10,39 @@ import plotly.express as px
 
 from get_metadata import build_graph
 
+def CitationTable(df):
+
+    return dash_table.DataTable(
+        id='table-degree',
+        columns=[{
+            "name": "Title",
+            "id": "title",
+            "type": "text",
+            "presentation": "markdown"
+        },
+        {
+            "name": "Citations",
+            "id": "citationCount",
+        },
+        {
+            "name": "Degree",
+            "id": "degree",
+        }
+        ],
+        data=df.to_dict('records'),
+        style_cell={'textAlign': 'left'},
+        page_action='native',
+        page_size=5,
+        style_cell_conditional=[
+        {
+            'if': {'column_id': 'title'},
+            'maxWidth': '500px',
+            'overflow': 'auto',
+            'textOverflow': 'ellipsis',
+        }
+        ])
+    
+
 def build_graph_from_bibliography(bibliography):
     
     session = requests_cache.CachedSession('lit_review_graph_cache')
@@ -151,35 +184,7 @@ def main():
             "## Publications by degree:",
             "Publications not present in the bibliography that have the most connections to other publications",
         ]),
-        dash_table.DataTable(
-            id='table-degree',
-            columns=[{
-                "name": "Title",
-                "id": "title",
-                "type": "text",
-                "presentation": "markdown"
-            },
-            {
-                "name": "Citations",
-                "id": "citationCount",
-            },
-            {
-                "name": "Degree",
-                "id": "degree",
-            }
-            ],
-            data=nodes_by_degree.to_dict('records'),
-            style_cell={'textAlign': 'left'},
-            page_action='native',
-            page_size=5,
-            style_cell_conditional=[
-            {
-                'if': {'column_id': 'title'},
-                'maxWidth': '500px',
-                'overflow': 'auto',
-                'textOverflow': 'ellipsis',
-            }
-            ]),
+        CitationTable(nodes_by_degree),
         dcc.Markdown([
             "## Publications by citation count:",
         ]),
@@ -208,21 +213,9 @@ def main():
                             )
         ),
         dcc.Markdown([
-            f"These {nodes_top_50_perc_citations.shape[0]} papers comprise 50% of the citations in this network (*shown by red dashed line*):",
+            f"These {nodes_top_50_perc_citations.shape[0]} papers constitute 50% of the citations in this network (*shown by red dashed line*):",
         ]),
-        dash_table.DataTable(
-            id='table-citation-count',
-            columns=[{
-                "name": "Title",
-                "id": "title",
-                "type": "text",
-                "presentation": "markdown"
-            }] + [{"name": i, "id": i} for i in ["citationCount", "degree"]],
-            data=nodes_top_50_perc_citations.to_dict('records'),
-            style_cell={'textAlign': 'left'},
-            page_action='native',
-            page_size=5
-        ),
+        CitationTable(nodes_top_50_perc_citations),
         dcc.Markdown([
             "Created by [Hamish Gibbs](https://github.com/hamishgibbs). Publication data from [Semantic Scholar](https://www.semanticscholar.org/).",
         ])
@@ -233,8 +226,6 @@ def main():
     def display_node_data(data):
         if data is None:
             return "Click a publication to display its information"
-        import json
-        print(json.dumps(data, indent=4))
 
         content = [
             dcc.Link(data["title"], href=data["url"], target='_blank', style={'color': 'blue', 'text-decoration': 'underline'}),
