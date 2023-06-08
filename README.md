@@ -4,7 +4,7 @@ Explore your bibliography as a network and find important papers you could have 
 
 ## Overview
 
-Have you come across an important, highly cited paper and thought: "How could I have missed this??"
+How many times have you come across an important, highly cited paper and thought: "How could I have missed this??"
 
 `lit_review_graph` is an attempt to find those papers by looking at the papers referenced by the papers you reference and identifying the important papers that connect your bibliography.
 
