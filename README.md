@@ -14,7 +14,7 @@ How many times have you come across an important, highly cited paper and thought
 
 ![](img/graph_screenshot.png)
 
-*Find papers which constitute the largest citation count in the network:*
+*Find the papers which make up the majority of citations in the network:*
 
 ![](img/cumulative_citations_screenshot.png)
 
