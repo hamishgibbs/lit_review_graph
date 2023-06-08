@@ -25,7 +25,7 @@ Create a text file with a series of DOIs:
 10.1126/science.286.5439.509
 ```
 
-Run the app and point it towards you bibliography:
+Run the app and point it to you bibliography:
 
 ```
 python src/app.py data/bibliography.txt
@@ -33,8 +33,8 @@ python src/app.py data/bibliography.txt
 
 ### Limitations
 
-`lit_review_graph` searches all of the references of the "seed" publications and will struggle with a large bibliography. I recommend dividing your references into small groups (5-10 publications) for the most clarity.
+`lit_review_graph` searches all of the references of the "seed" publications you provide and will struggle with a large bibliography. I recommend dividing your references into small groups (5-10 publications) for the most clarity.
 
-When adding a new paper, `lit_review_graph` may take some time to query the metadata for each of the connected references [Semantic Scholar](https://www.semanticscholar.org/). Requests are cached in `lit_review_graph_cache.sqlite` and start-up will be faster when you re-run the app.
+When adding a new paper, `lit_review_graph` may take some time to query the metadata for each of the connected references from [Semantic Scholar](https://www.semanticscholar.org/). Requests are cached in `lit_review_graph_cache.sqlite` and start-up will be faster when you re-run the app.
 
-[Semantic Scholar](https://www.semanticscholar.org/) is a great source of free and clean information on the academic citation network but data for some papers (particularly older papers) may be missing or incomplete. 
+[Semantic Scholar](https://www.semanticscholar.org/) is a great free source of information on the academic citation network but data for some papers (particularly older papers) may be missing or incomplete. 
