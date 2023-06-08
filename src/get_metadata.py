@@ -10,7 +10,7 @@ def get_paper_metadata(session, id, fields):
     url = f"https://api.semanticscholar.org/graph/v1/paper/{id}?fields={fields}"
     r = session.get(url)
     if r.status_code == 200:
-        logging.info(f"{id}")
+        logging.info(f"Queried publication ID: {id}")
         return r.json()
     else:
         logging.error(f"{id}")

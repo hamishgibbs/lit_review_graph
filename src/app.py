@@ -4,16 +4,17 @@ import requests_cache
 import numpy as np
 import pandas as pd
 from dash import Dash, html, dash_table, dcc
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import dash_cytoscape as cyto
 import plotly.express as px
 
 from get_metadata import build_graph
 
-def CitationTable(df):
+def CitationTable(df, id):
 
     return dash_table.DataTable(
-        id='table-degree',
+        id=id,
         columns=[{
             "name": "Title",
             "id": "title",
@@ -139,9 +140,10 @@ def main():
     nodes_top_50_perc_citations = get_publications_top_50_perc_citations(nodes_by_citation)
     nodes_by_citation["index"] = nodes_by_citation.index
 
-    app = Dash(__name__, external_stylesheets=['/assets/style.css'])
+    app = Dash(__name__, external_stylesheets=['/assets/style.css', dbc.themes.BOOTSTRAP])
 
     app.layout = html.Div([
+        html.Link(rel='icon', href='/assets/favicon.ico'),
         dcc.Markdown([
             "# Literature Review Graph",
             # TODO Some reporting on which paperIds errored
@@ -156,7 +158,7 @@ def main():
                 id='cytoscape',
                 elements=cynodes + cylinks,
                 layout={'name': 'cose'},
-                style={'width': '80%', 'height': '600px'},
+                style={'width': '70%', 'height': '600px'},
                 stylesheet=[
                     {
                         'selector': 'node',
@@ -179,14 +181,18 @@ def main():
                     }
                 ]
             ),
-            html.Div(id='node-info',
-                     style={'width': '20%', 'height': '600px', 'overflow': 'auto', 'line-height': '1.2'}),
+            dbc.Toast(
+                [html.P("This is the content of the toast", className="mb-0")],
+                id="node-info",
+                header="Publication information",
+                style={'width': '30%', 'height': '600px', 'overflow': 'auto', 'line-height': '1.2'}
+            ),
         ], style={'display': 'flex'}),
         dcc.Markdown([
             "## Publications by degree:",
             "Publications not present in the bibliography that have the most connections to other publications",
         ]),
-        CitationTable(nodes_by_degree),
+        CitationTable(nodes_by_degree, 'table-degree'),
         dcc.Markdown([
             "## Publications by citation count:",
         ]),
@@ -217,7 +223,7 @@ def main():
         dcc.Markdown([
             f"These {nodes_top_50_perc_citations.shape[0]} papers constitute 50% of the citations in this network (*shown by red dashed line*):",
         ]),
-        CitationTable(nodes_top_50_perc_citations),
+        CitationTable(nodes_top_50_perc_citations, 'table-citation-count'),
         dcc.Markdown([
             "Created by [Hamish Gibbs](https://github.com/hamishgibbs). Publication data from [Semantic Scholar](https://www.semanticscholar.org/).",
         ])
