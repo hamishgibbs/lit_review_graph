@@ -37,4 +37,4 @@ python src/app.py bibliography.txt
 
 When adding a new paper, `lit_review_graph` may take some time to query the metadata for each of the connected references from [Semantic Scholar](https://www.semanticscholar.org/). Requests are cached in `lit_review_graph_cache.sqlite` and start-up will be faster after a paper has been downloaded.
 
-[Semantic Scholar](https://www.semanticscholar.org/) is a great free source of information on the academic citation network but data for some papers (particularly older papers) may be missing or incomplete. 
+[Semantic Scholar](https://www.semanticscholar.org/) is a great free resource for citation data but information for some papers (particularly older papers) may be missing or incomplete. 
