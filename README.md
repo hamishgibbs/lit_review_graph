@@ -10,13 +10,13 @@ How many times have you come across an important, highly cited paper and thought
 
 `lit_review_graph` is similar to [ResearchRabbit](https://researchrabbitapp.com/home) or [Connected Papers](https://www.connectedpapers.com/) but runs locally and displays the complete reference network for papers in your bibliography.
 
-![](img/graph_screenshot.png)
-
-*Explore publications in a connected network.*
+*Explore publications in a connected network:*
 
 ![](img/graph_screenshot.png)
 
-*Find papers which constitute the largest citation count in the network.*
+*Find papers which constitute the largest citation count in the network:*
+
+![](img/graph_screenshot.png)
 
 ## Installation
 
