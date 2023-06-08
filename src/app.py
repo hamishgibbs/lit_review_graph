@@ -118,6 +118,8 @@ def get_publications_by_citations(nodes, links):
 
 def get_publications_top_50_perc_citations(nodes):
 
+    nodes = nodes.copy(deep=True)
+
     nodes = nodes[nodes["citationCount_cumulative_prop"] < 0.5]
 
     nodes['title'] = nodes.apply(lambda row: f"[{row['title']}]({row['url']})", axis=1)

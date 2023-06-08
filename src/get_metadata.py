@@ -73,9 +73,6 @@ def build_graph(session, bibliography):
     bibliography_metadata = get_metadata_mult(session, bibliography_paper_ids)
 
     links = build_links(bibliography_metadata)
-
-    print(f"Links: {len(links)}")
-    print(f"Nodes: {len(set([x['source'] for x in links if x] + [x['target'] for x in links if x]))}")
     
     node_metadata = get_metadata_mult(session, 
                                       set([x["source"] for x in links if x] + [x["target"] for x in links if x]),
