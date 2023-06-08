@@ -35,6 +35,6 @@ python src/app.py bibliography.txt
 
 `lit_review_graph` searches all of the references of papers in your bibliography and will struggle with a large network. I recommend dividing your references into small groups (5-10 publications) for the most clarity.
 
-When adding a new paper, `lit_review_graph` may take some time to query the metadata for each of the connected references from [Semantic Scholar](https://www.semanticscholar.org/). Requests are cached in `lit_review_graph_cache.sqlite` and start-up will be faster when you re-run the app.
+When adding a new paper, `lit_review_graph` may take some time to query the metadata for each of the connected references from [Semantic Scholar](https://www.semanticscholar.org/). Requests are cached in `lit_review_graph_cache.sqlite` and start-up will be faster after a paper has been downloaded.
 
 [Semantic Scholar](https://www.semanticscholar.org/) is a great free source of information on the academic citation network but data for some papers (particularly older papers) may be missing or incomplete. 
