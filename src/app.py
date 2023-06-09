@@ -106,7 +106,6 @@ def get_publications_by_degree(nodes, links):
 
     nodes = nodes.sort_values(["degree", "citationCount"], ascending=False)
     nodes = nodes[nodes["group"] == 0]
-    nodes = nodes[nodes["degree"] > 1]
 
     nodes['title'] = nodes.apply(lambda row: f"[{row['title']}]({row['url']})", axis=1)
 
