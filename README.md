@@ -2,7 +2,7 @@
 
 ## Overview
 
-`lit_review_graph` helps you find papers that make you say: "How could I have missed this???"
+`lit_review_graph` helps you find papers that you can't believe you missed.
 
 `lit_review_graph` is similar to [ResearchRabbit](https://researchrabbitapp.com/home) or [Connected Papers](https://www.connectedpapers.com/) but runs locally and displays the complete reference network for papers in your bibliography.
 
