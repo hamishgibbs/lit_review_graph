@@ -155,7 +155,7 @@ def main():
     app.layout = html.Div([
         html.Link(rel='icon', href='/assets/favicon.ico'),
         dcc.Markdown([
-            "# Literature Review Graph",
+            "# 📕 Literature Review Graph",
             # TODO Some reporting on which paperIds errored
             f"Input bibliography: {sys.argv[1]} ({nodes['group'].sum()} publications)",
             f"## Graph metrics:",
