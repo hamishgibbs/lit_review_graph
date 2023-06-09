@@ -106,7 +106,6 @@ def get_publications_by_degree(nodes, links):
 
     nodes = nodes.sort_values(["degree", "citationCount"], ascending=False)
     nodes = nodes[nodes["group"] == 0]
-    nodes = nodes[nodes["degree"] > 1]
 
     nodes['title'] = nodes.apply(lambda row: f"[{row['title']}]({row['url']})", axis=1)
 
@@ -155,7 +154,7 @@ def main():
     app.layout = html.Div([
         html.Link(rel='icon', href='/assets/favicon.ico'),
         dcc.Markdown([
-            "# Literature Review Graph",
+            "# 📕 Literature Review Graph",
             # TODO Some reporting on which paperIds errored
             f"Input bibliography: {sys.argv[1]} ({nodes['group'].sum()} publications)",
             f"## Graph metrics:",
