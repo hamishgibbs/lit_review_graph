@@ -105,6 +105,7 @@ def build_graph_from_bibliography(bibliography):
 def format_bibliography(nodes):
 
     nodes = pd.DataFrame(nodes)
+    nodes = nodes[nodes["group"] == 1]
     nodes["title"] = nodes.apply(lambda row: f"[{row['title']}]({row['url']})", axis=1)
     nodes["author_names"] = nodes.apply(
         lambda row: ", ".join(row["author_names"]), axis=1
