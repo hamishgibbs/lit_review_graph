@@ -1,5 +1,4 @@
 import sys
-import os
 import requests_cache
 import numpy as np
 import pandas as pd
