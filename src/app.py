@@ -209,13 +209,13 @@ def main():
             "# 📕 Literature Review Graph",
             # TODO Some reporting on which paperIds errored
             f"Input bibliography: {sys.argv[1]} ({nodes['group'].sum()} publications)",
-            f"## Graph metrics:",
-            f"Number of connected publications: {len(nodes)}  ",
-            f"Number of connections: {len(links)}",
             f"## Bibliography:",
         ]),
         BibiliographyTable(format_bibliography(nodes), 'table-bibliography'),
         dcc.Markdown([
+            f"## Graph metrics:",
+            f"Number of connected publications: {len(nodes)}  ",
+            f"Number of connections: {len(links)}",
             f"## Graph explorer:",
         ]),
         html.Div([
