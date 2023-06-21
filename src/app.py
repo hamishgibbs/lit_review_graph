@@ -11,8 +11,52 @@ import plotly.express as px
 
 from get_metadata import build_graph
 
-def CitationTable(df, id):
+def BibiliographyTable(df, id):
+    return dash_table.DataTable(
+        id=id,
+        columns=[{
+            "name": "Title",
+            "id": "title",
+            "type": "text",
+            "presentation": "markdown"
+        },
+        {
+            "name": "Year",
+            "id": "year",
+        },
+        {
+            "name": "Authors",
+            "id": "author_names",
+        },
+        {
+            "name": "Citations",
+            "id": "citationCount",
+        },
+        ],
+        data=df.to_dict('records'),
+        style_cell={'textAlign': 'left'},
+        page_action='native',
+        page_size=5,
+        style_cell_conditional=[
+        {
+            'if': {'column_id': 'title'},
+            'maxWidth': '500px',
+            'overflow': 'auto',
+            'textOverflow': 'ellipsis',
+        },
+        {
+            'if': {'column_id': 'author_names'},
+            'maxWidth': '150px',
+            'overflow': 'auto',
+        },
+        ],
+        style_header={
+            'fontWeight': 'bold',
+            'fontFamily': 'Arial'
+        })
+    
 
+def CitationTable(df, id):
     return dash_table.DataTable(
         id=id,
         columns=[{
@@ -58,6 +102,15 @@ def build_graph_from_bibliography(bibliography):
     bibliography = [f"DOI:{citation.strip()}" for citation in bibliography]
 
     return build_graph(session, bibliography)
+
+def format_bibliography(nodes):
+
+    nodes = pd.DataFrame(nodes)
+    nodes["title"] = nodes.apply(lambda row: f"[{row['title']}]({row['url']})", axis=1)
+    nodes["author_names"] = nodes.apply(lambda row: ", ".join(row["author_names"]), axis=1)
+    nodes.sort_values(["citationCount"], ascending=False, inplace=True)
+
+    return nodes[["title", "year", "author_names", "citationCount"]]
 
 def build_cytoscape(nodes, links):
 
@@ -136,7 +189,6 @@ def get_publications_top_50_perc_citations(nodes):
 def main():
 
     nodes, links = build_graph_from_bibliography(sys.argv[1])
-    print("")
     
     cynodes, cylinks = build_cytoscape(nodes, links)
 
@@ -160,6 +212,10 @@ def main():
             f"## Graph metrics:",
             f"Number of connected publications: {len(nodes)}  ",
             f"Number of connections: {len(links)}",
+            f"## Bibliography:",
+        ]),
+        BibiliographyTable(format_bibliography(nodes), 'table-bibliography'),
+        dcc.Markdown([
             f"## Graph explorer:",
         ]),
         html.Div([
