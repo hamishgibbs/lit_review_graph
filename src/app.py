@@ -17,7 +17,10 @@ from components.network import (
 from components.tables import (
     BibiliographyTable, 
     CitationTable, 
-    format_nodes_for_table
+    format_nodes_for_bibliography_table,
+    get_publications_by_degree,
+    get_publications_by_citations,
+    get_publications_top_50_perc_citations
 )
 from db import (
     initialize_database,
@@ -41,50 +44,6 @@ def build_graph_from_bibliography(bibliography): # TODO: bibliography_name
     bibliography = [f"DOI:{citation.strip()}" for citation in bibliography]
 
     return build_graph(session, bibliography)
-
-
-def get_publications_by_degree(nodes, links):
-
-    node_ids = [x for x in nodes["paperId"]]
-
-    for node in node_ids:
-        node_degree = len(links[links["source"] == node]) + len(
-            links[links["target"] == node]
-        )
-        nodes.loc[nodes["paperId"] == node, "degree"] = node_degree
-
-    nodes = nodes.sort_values(["degree", "citationCount"], ascending=False)
-    nodes = nodes[nodes["group"] == 0]
-
-    nodes["title"] = nodes.apply(lambda row: f"[{row['title']}]({row['url']})", axis=1)
-
-    return nodes[["title", "citationCount", "degree"]]
-
-
-def get_publications_by_citations(nodes, links):
-
-    nodes = nodes.sort_values(["citationCount"], ascending=False).reset_index()
-
-    nodes["citationCount_cumulative"] = np.cumsum(nodes["citationCount"])
-    nodes["citationCount_cumulative_prop"] = nodes["citationCount_cumulative"] / np.sum(
-        nodes["citationCount"]
-    )
-
-    return nodes
-
-
-def get_publications_top_50_perc_citations(nodes):
-
-    nodes = nodes.copy(deep=True)
-
-    if min(nodes["citationCount_cumulative_prop"]) > 0.5:
-        nodes = nodes.iloc[0:1]
-    else:
-        nodes = nodes[nodes["citationCount_cumulative_prop"] < 0.5]
-
-    nodes["title"] = nodes.apply(lambda row: f"[{row['title']}]({row['url']})", axis=1)
-
-    return nodes[["title", "citationCount", "degree"]]
 
 
 def main():
@@ -155,7 +114,7 @@ def main():
                 ]) for bib in bibliographies
             ], style={'width': '300px', 'overflowY': 'scroll', 'height': '500px'}),
             dcc.Markdown("## Bibliography:"),
-            BibiliographyTable(format_nodes_for_table(nodes), "table-bibliography"),
+            BibiliographyTable(format_nodes_for_bibliography_table(nodes), "table-bibliography"),
             dcc.Markdown(
                 [
                     f"## Graph metrics:",
