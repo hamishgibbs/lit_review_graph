@@ -1,5 +1,6 @@
 from dash import dash_table
 import pandas as pd
+import numpy as np
 
 def format_nodes_for_bibliography_table(nodes):
     """Format nodes for the table listing publications in this bibliography"""

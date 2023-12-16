@@ -1,9 +1,10 @@
 import sys
+import json
 from datetime import datetime
 import requests_cache
 import numpy as np
 import pandas as pd
-from dash import Dash, html, dcc, callback_context
+from dash import Dash, html, dcc, callback_context, no_update
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
@@ -35,10 +36,10 @@ logging.basicConfig(filename="app.log", level=logging.INFO, filemode="w")
 def main():
 
     # Initialize db
-    # list_bibliographies()
-    # Wait for a bibliography to be selected? 
     db_path = sys.argv[1]
     initialize_database(db_path)
+
+    # Set initial active_bibliography state to None (nothing has been selected)
 
     # Query first bibliograph in db
     # This will have to become state
@@ -66,6 +67,7 @@ def main():
 
     app.layout = html.Div(
         [
+            dcc.Store(id='active-bibliography', data=None),
             html.Link(rel="icon", href="/assets/favicon.ico"),
             dcc.Markdown(
                 [
@@ -76,7 +78,7 @@ def main():
             ),
             html.Div([
                 dcc.Markdown("## Bibliographies:"),
-                dbc.Button("Add", id="add-bibliography", n_clicks=0),
+                dbc.Button("New Bibliography", id="add-bibliography", n_clicks=0),
             ]),
             dbc.Modal([
                 dbc.ModalHeader("Add bibliography"),
@@ -93,12 +95,10 @@ def main():
                 )
             ], id="modal-bibliography"),
             html.Div([
-                dbc.Row([
-                    dbc.Col(bib[1], width='auto'),
-                    dbc.Col(dbc.Button("Select", id={'type': 'load-bib', 'index': bib[0]}), width='auto'),
-                    dbc.Col(dbc.Button("Delete", id={'type': 'delete-bib', 'index': bib[0]}), width='auto')
-                ]) for bib in bibliographies
-            ], style={'width': '300px', 'overflowY': 'scroll', 'height': '500px'}),
+                html.Div([dbc.Button(bib[1], id= {'type': 'activate-bib', 'index': bib[0]}, n_clicks=0) for bib in bibliographies],
+                         id="div-bibliography-buttons"),
+                html.Div(id='div-active-bibliography')
+            ]),
             dcc.Markdown("## Bibliography:"),
             BibiliographyTable(format_nodes_for_bibliography_table(nodes), "table-bibliography"),
             dcc.Markdown(
@@ -191,6 +191,57 @@ def main():
         ]
     )
 
+    @app.callback(
+        Output('active-bibliography', 'data'),
+        [Input({'type': 'activate-bib', 'index': ALL}, 'n_clicks')]
+    )
+    def handle_click(*args):
+        """Select an active bibliography with buttons"""
+        # TODO: This could be extended to a delete-bib button with 
+        # if 'delete-bib' in button_id:
+        ctx = callback_context
+        if not ctx.triggered:
+            return no_update
+        else:
+            button_id = ctx.triggered[0]['prop_id']
+            bib_index = json.loads(button_id.split('.')[0])['index']
+            return bib_index
+        
+    @app.callback(
+        Output('div-active-bibliography', 'children'),
+        Input('active-bibliography', 'data'),
+    )
+    def update_active_bibliography(data):
+        """Placeholder to show selected active bibliography"""
+        if data is None:
+            return "No bibliography selected"
+        else:
+            return f"Active bibliography: {data}"
+    
+    @app.callback(
+        Output("modal-bibliography", "is_open"),
+        [Input("add-bibliography", "n_clicks"), Input("save-bibliography", "n_clicks")],
+        [State("modal-bibliography", "is_open")],
+    )
+    def toggle_modal(n1, n2, is_open):
+        """Toggle add bibliography modal open/closed"""
+        if n1 or n2:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output('div-bibliography-buttons', 'children'),
+        Input('save-bibliography', 'n_clicks'),
+        [State('modal-bibliography', 'is_open'), State('input-bibliography-name', 'value')]
+    )
+    def save_bibliography(n, is_open, name_value):
+        if n:
+            mtime = datetime.now().timestamp()
+            create_bibliography(db_path, name_value, mtime)
+            logging.info(f"Created bibliography: {name_value}, {mtime}")
+            updated_bibliographies = get_all_bibliographies(db_path)
+        return [dbc.Button(bib[1], id= {'type': 'activate-bib', 'index': bib[0]}, n_clicks=0) for bib in updated_bibliographies]
+
     @app.callback(Output("node-info", "children"), Input("cytoscape", "tapNodeData"))
     def display_node_data(data):
         if data is None:
@@ -219,48 +270,6 @@ def main():
             content.append(dcc.Markdown(f"*DOI: {data['DOI']}*"))
 
         return content
-
-    @app.callback(
-        Output("modal-bibliography", "is_open"),
-        [Input("add-bibliography", "n_clicks"), Input("save-bibliography", "n_clicks")],
-        [State("modal-bibliography", "is_open")],
-    )
-    def toggle_modal(n1, n2, is_open):
-        if n1 or n2:
-            return not is_open
-        return is_open
-
-    @app.callback(
-        Output('save-bibliography', 'n_clicks'),
-        Input('save-bibliography', 'n_clicks'),
-        [State('modal-bibliography', 'is_open'), State('input-bibliography-name', 'value')]
-    )
-    def save_bibliography(n, is_open, name_value):
-        if n:
-            mtime = datetime.now().timestamp()
-            create_bibliography(db_path, name_value, mtime)
-            logging.info(f"Created bibliography: {name_value}, {mtime}")
-        return n
-
-    @app.callback(
-        Output('output-container', 'children'),
-        [Input({'type': 'load-bib', 'index': ALL}, 'n_clicks'),
-        Input({'type': 'delete-bib', 'index': ALL}, 'n_clicks')]
-    )
-    def handle_click(*args):
-        ctx = callback_context
-
-        if not ctx.triggered:
-            return "No bibliography selected"
-
-        button_id = ctx.triggered[0]['prop_id']
-        if 'load-bib' in button_id:
-            bib_name = button_id.split('"')[3]
-            return f"Loading {bib_name}"
-        elif 'delete-bib' in button_id:
-            bib_name = button_id.split('"')[3]
-            # Add logic to delete bibliography
-            return f"Deleted {bib_name}"
 
     debug = "--debug" in sys.argv
 
