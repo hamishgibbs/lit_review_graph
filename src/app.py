@@ -28,23 +28,9 @@ from db import (
     create_bibliography,
     delete_bibliography
 )
-from get_metadata import build_graph
+from get_metadata import build_graph_from_bibliography
 
 logging.basicConfig(filename="app.log", level=logging.INFO, filemode="w")
-
-def build_graph_from_bibliography(bibliography): # TODO: bibliography_name
-    """Builds nodes and links from a bibliography of DOIs"""
-
-    session = requests_cache.CachedSession("lit_review_graph_cache")
-
-    # TODO: remove this, bibliography a query of DOIs from the db
-    with open(bibliography) as f:
-        bibliography = f.readlines()
-
-    bibliography = [f"DOI:{citation.strip()}" for citation in bibliography]
-
-    return build_graph(session, bibliography)
-
 
 def main():
 
