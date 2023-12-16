@@ -1,4 +1,5 @@
 import numpy as np
+import dash_cytoscape as cyto
 
 def build_cytoscape(nodes, links):
 
@@ -37,3 +38,33 @@ def build_cytoscape(nodes, links):
         cylinks.append({"data": {"source": link["source"], "target": link["target"]}})
 
     return cynodes, cylinks
+
+def PublicationCytoscape(cynodes, cylinks):
+
+    cyto.Cytoscape(
+                        id="cytoscape",
+                        elements=cynodes + cylinks,
+                        layout={"name": "cose"},
+                        style={"width": "70%", "height": "600px"},
+                        stylesheet=[
+                            {
+                                "selector": "node",
+                                "style": {
+                                    "width": "mapData(citationCountLog, 0, 100, 0.01, 100)",
+                                    "height": "mapData(citationCountLog, 0, 100, 0.05, 100)",
+                                },
+                            },
+                            {
+                                "selector": "edge",
+                                "style": {
+                                    "width": 0.2,
+                                },
+                            },
+                            {
+                                "selector": "node",
+                                "style": {
+                                    "background-color": "mapData(group, 0, 1, rgb(199, 206, 219), rgb(84, 101, 255))"
+                                },
+                            },
+                        ],
+                    )

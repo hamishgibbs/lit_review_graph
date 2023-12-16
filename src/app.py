@@ -7,11 +7,13 @@ from dash import Dash, html, dcc, callback_context
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
-import dash_cytoscape as cyto
 import plotly.express as px
 import logging
 
-from components.network import build_cytoscape
+from components.network import (
+    build_cytoscape,
+    PublicationCytoscape
+)
 from components.tables import (
     BibiliographyTable, 
     CitationTable, 
@@ -164,33 +166,7 @@ def main():
             ),
             html.Div(
                 [
-                    cyto.Cytoscape(
-                        id="cytoscape",
-                        elements=cynodes + cylinks,
-                        layout={"name": "cose"},
-                        style={"width": "70%", "height": "600px"},
-                        stylesheet=[
-                            {
-                                "selector": "node",
-                                "style": {
-                                    "width": "mapData(citationCountLog, 0, 100, 0.01, 100)",
-                                    "height": "mapData(citationCountLog, 0, 100, 0.05, 100)",
-                                },
-                            },
-                            {
-                                "selector": "edge",
-                                "style": {
-                                    "width": 0.2,
-                                },
-                            },
-                            {
-                                "selector": "node",
-                                "style": {
-                                    "background-color": "mapData(group, 0, 1, rgb(199, 206, 219), rgb(84, 101, 255))"
-                                },
-                            },
-                        ],
-                    ),
+                    PublicationCytoscape(cynodes, cylinks),
                     dbc.Toast(
                         [html.P("This is the content of the toast", className="mb-0")],
                         id="node-info",
