@@ -1,15 +1,24 @@
 import sys
+from datetime import datetime
 import requests_cache
 import numpy as np
 import pandas as pd
-from dash import Dash, html, dash_table, dcc
+from dash import Dash, html, dash_table, dcc, callback_context
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 import dash_cytoscape as cyto
 import plotly.express as px
-
+from db import (
+    initialize_database,
+    get_all_bibliographies,
+    create_bibliography,
+    delete_bibliography
+)
+import logging
 from get_metadata import build_graph
 
+logging.basicConfig(filename="app.log", level=logging.INFO, filemode="w")
 
 def BibiliographyTable(df, id):
     return dash_table.DataTable(
@@ -204,8 +213,14 @@ def main():
     # Initialize db
     # list_bibliographies()
     # Wait for a bibliography to be selected? 
+    db_path = sys.argv[1]
+    initialize_database(db_path)
 
-    nodes, links = build_graph_from_bibliography(sys.argv[1])
+    # Query first bibliograph in db
+    # This will have to become state
+    bibliographies = get_all_bibliographies(db_path)
+
+    nodes, links = build_graph_from_bibliography("data/bibliography_bias.txt")
     print("")
 
     cynodes, cylinks = build_cytoscape(nodes, links)
@@ -232,10 +247,35 @@ def main():
                 [
                     "# 📕 Literature Review Graph",
                     # TODO Some reporting on which paperIds errored
-                    f"Input bibliography: {sys.argv[1]} ({nodes['group'].sum()} publications)",
-                    f"## Bibliography:",
+                    f"Local database: {sys.argv[1]}",
                 ]
             ),
+            html.Div([
+                dcc.Markdown("## Bibliographies:"),
+                dbc.Button("Add", id="add-bibliography", n_clicks=0),
+            ]),
+            dbc.Modal([
+                dbc.ModalHeader("Add bibliography"),
+                dbc.ModalBody([
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Name"),
+                            dbc.Input(type="text", id="input-bibliography-name"),
+                        ])
+                ]),
+                ]),
+                dbc.ModalFooter(
+                    dbc.Button("Save", id="save-bibliography", className="ml-auto")
+                )
+            ], id="modal-bibliography"),
+            html.Div([
+                dbc.Row([
+                    dbc.Col(bib[1], width='auto'),
+                    dbc.Col(dbc.Button("Select", id={'type': 'load-bib', 'index': bib[0]}), width='auto'),
+                    dbc.Col(dbc.Button("Delete", id={'type': 'delete-bib', 'index': bib[0]}), width='auto')
+                ]) for bib in bibliographies
+            ], style={'width': '300px', 'overflowY': 'scroll', 'height': '500px'}),
+            dcc.Markdown("## Bibliography:"),
             BibiliographyTable(format_bibliography(nodes), "table-bibliography"),
             dcc.Markdown(
                 [
@@ -381,6 +421,48 @@ def main():
             content.append(dcc.Markdown(f"*DOI: {data['DOI']}*"))
 
         return content
+
+    @app.callback(
+        Output("modal-bibliography", "is_open"),
+        [Input("add-bibliography", "n_clicks"), Input("save-bibliography", "n_clicks")],
+        [State("modal-bibliography", "is_open")],
+    )
+    def toggle_modal(n1, n2, is_open):
+        if n1 or n2:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output('save-bibliography', 'n_clicks'),
+        Input('save-bibliography', 'n_clicks'),
+        [State('modal-bibliography', 'is_open'), State('input-bibliography-name', 'value')]
+    )
+    def save_bibliography(n, is_open, name_value):
+        if n:
+            mtime = datetime.now().timestamp()
+            create_bibliography(db_path, name_value, mtime)
+            logging.info(f"Created bibliography: {name_value}, {mtime}")
+        return n
+
+    @app.callback(
+        Output('output-container', 'children'),
+        [Input({'type': 'load-bib', 'index': ALL}, 'n_clicks'),
+        Input({'type': 'delete-bib', 'index': ALL}, 'n_clicks')]
+    )
+    def handle_click(*args):
+        ctx = callback_context
+
+        if not ctx.triggered:
+            return "No bibliography selected"
+
+        button_id = ctx.triggered[0]['prop_id']
+        if 'load-bib' in button_id:
+            bib_name = button_id.split('"')[3]
+            return f"Loading {bib_name}"
+        elif 'delete-bib' in button_id:
+            bib_name = button_id.split('"')[3]
+            # Add logic to delete bibliography
+            return f"Deleted {bib_name}"
 
     debug = "--debug" in sys.argv
 

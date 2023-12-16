@@ -1,10 +1,7 @@
+import pandas as pd
 import sqlite3
 
 def create_connection(db_file):
-    """ create a database connection to the SQLite database specified by db_file
-    :param db_file: database file
-    :return: Connection object or None
-    """
     try:
         conn = sqlite3.connect(db_file)
         return conn
@@ -13,8 +10,8 @@ def create_connection(db_file):
 
     return None
 
-def execute_sql(conn, sql, data=None):
-    """ Execute a given SQL command with optional data """
+def execute_sql(db_file, sql, data=None):
+    conn = create_connection(db_file)
     try:
         c = conn.cursor()
         if data:
@@ -24,9 +21,10 @@ def execute_sql(conn, sql, data=None):
         conn.commit()
     except sqlite3.Error as e:
         print(e)
+    
+    conn.close()
 
-def initialize_database():
-    database = "path_to_your_database.db"
+def initialize_database(db_file):
 
     sql_create_bibliographies_table = """
     CREATE TABLE IF NOT EXISTS bibliographies (
@@ -43,42 +41,36 @@ def initialize_database():
         FOREIGN KEY (bib_id) REFERENCES bibliographies (id)
     ); """
 
-    # create a database connection
-    conn = create_connection(database)
+    execute_sql(db_file, sql_create_bibliographies_table)
+    execute_sql(db_file, sql_create_dois_table)
 
-    # create tables
-    if conn is not None:
-        execute_sql(conn, sql_create_bibliographies_table)
-        execute_sql(conn, sql_create_dois_table)
-    else:
-        print("Error! Cannot create the database connection.")
 
-    conn.close()
-
-def create_bibliography(conn, name, mtime):
+def create_bibliography(db_file, name, mtime):
     sql = ''' INSERT INTO bibliographies(name, mtime) VALUES(?, ?) '''
-    execute_sql(conn, sql, (name, mtime))
+    execute_sql(db_file, sql, (name, mtime))
 
-def delete_bibliography(conn, id):
+def delete_bibliography(db_file, id):
     sql = ''' DELETE FROM bibliographies WHERE id = ? '''
-    execute_sql(conn, sql, (id,))
+    execute_sql(db_file, sql, (id,))
 
-def add_doi(conn, doi, bib_id):
+def add_doi(db_file, doi, bib_id):
     sql = ''' INSERT INTO dois(doi, bib_id) VALUES(?, ?) '''
-    execute_sql(conn, sql, (doi, bib_id))
+    execute_sql(db_file, sql, (doi, bib_id))
 
-def delete_doi(conn, doi):
+def delete_doi(db_file, doi):
     sql = ''' DELETE FROM dois WHERE doi = ? '''
-    execute_sql(conn, sql, (doi,))
+    execute_sql(db_file, sql, (doi,))
 
-def get_all_bibliographies(conn):
+def get_all_bibliographies(db_file):
     sql = ''' SELECT * FROM bibliographies '''
+    conn = create_connection(db_file)
     cur = conn.cursor()
     cur.execute(sql)
     return cur.fetchall()
 
-def get_dois_for_bibliography(conn, bib_id):
+def get_dois_for_bibliography(db_file, bib_id):
     sql = ''' SELECT doi FROM dois WHERE bib_id = ? '''
+    conn = create_connection(db_file)
     cur = conn.cursor()
     cur.execute(sql, (bib_id,))
     return cur.fetchall()
