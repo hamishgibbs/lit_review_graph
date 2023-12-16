@@ -90,10 +90,11 @@ def CitationTable(df, id):
     )
 
 
-def build_graph_from_bibliography(bibliography):
+def build_graph_from_bibliography(bibliography): # TODO: bibliography_name
 
     session = requests_cache.CachedSession("lit_review_graph_cache")
 
+    # TODO: remove this, bibliography a query of DOIs from the db
     with open(bibliography) as f:
         bibliography = f.readlines()
 
@@ -199,6 +200,10 @@ def get_publications_top_50_perc_citations(nodes):
 
 
 def main():
+
+    # Initialize db
+    # list_bibliographies()
+    # Wait for a bibliography to be selected? 
 
     nodes, links = build_graph_from_bibliography(sys.argv[1])
     print("")
