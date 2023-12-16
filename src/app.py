@@ -27,7 +27,8 @@ from db import (
     initialize_database,
     get_all_bibliographies,
     create_bibliography,
-    delete_bibliography
+    delete_bibliography,
+    get_dois_for_bibliography
 )
 from get_metadata import build_graph_from_bibliography
 
@@ -97,9 +98,8 @@ def main():
             html.Div([
                 html.Div([dbc.Button(bib[1], id= {'type': 'activate-bib', 'index': bib[0]}, n_clicks=0) for bib in bibliographies],
                          id="div-bibliography-buttons"),
-                html.Div(id='div-active-bibliography')
             ]),
-            dcc.Markdown("## Bibliography:"),
+            html.Div(id='div-active-bibliography'),
             BibiliographyTable(format_nodes_for_bibliography_table(nodes), "table-bibliography"),
             dcc.Markdown(
                 [
@@ -204,8 +204,18 @@ def main():
             return no_update
         else:
             button_id = ctx.triggered[0]['prop_id']
-            bib_index = json.loads(button_id.split('.')[0])['index']
-            return bib_index
+            bib_id = json.loads(button_id.split('.')[0])['index']
+            
+            dois = get_dois_for_bibliography(db_path, bib_id)
+            bib_name = [bib[1] for bib in bibliographies if bib[0] == bib_id][0]
+            
+            if not dois:
+                return {'bib_id': bib_id, 'bib_name': bib_name, 'nodes': [], 'links': []}
+            else:
+            # TODO: make active-bibliography data have bib_id, bib_name, nodes, links
+            # the below will have to be changed to take a list of the DOIs in the bib
+            # nodes, links = build_graph_from_bibliography("data/bibliography_bias.txt")
+                return bib_id
         
     @app.callback(
         Output('div-active-bibliography', 'children'),
@@ -214,9 +224,12 @@ def main():
     def update_active_bibliography(data):
         """Placeholder to show selected active bibliography"""
         if data is None:
-            return "No bibliography selected"
+            return dcc.Markdown("No bibliography selected")
         else:
-            return f"Active bibliography: {data}"
+            return [
+                dcc.Markdown(f"## {data['bib_name']} Publications:"),
+                dbc.Button("Add Publication", id="add-publication", n_clicks=0),
+                ]
     
     @app.callback(
         Output("modal-bibliography", "is_open"),
