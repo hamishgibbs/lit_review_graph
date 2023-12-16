@@ -11,6 +11,7 @@ import dash_cytoscape as cyto
 import plotly.express as px
 import logging
 
+from components.network import build_cytoscape
 from components.tables import (
     BibiliographyTable, 
     CitationTable, 
@@ -38,45 +39,6 @@ def build_graph_from_bibliography(bibliography): # TODO: bibliography_name
     bibliography = [f"DOI:{citation.strip()}" for citation in bibliography]
 
     return build_graph(session, bibliography)
-
-
-def build_cytoscape(nodes, links):
-
-    cynodes = []
-
-    for node in nodes:
-        cynodes.append(
-            {
-                "data": {
-                    "id": node["paperId"],
-                    "title": node["title"],
-                    "journal": node["journal"],
-                    "year": node["year"],
-                    "author_names": ", ".join(node["author_names"]),
-                    "citationCount": node["citationCount"],
-                    "citationCountLog": np.log2(
-                        np.where(
-                            node["citationCount"] == 0, 1e-100, node["citationCount"]
-                        )
-                    ),
-                    "url": node["url"],
-                    "group": int(node["group"]),
-                    "tldr": node["tldr"],
-                    "DOI": node["DOI"],
-                }
-            }
-        )
-
-    cylinks = []
-
-    for link in links:
-
-        if not link["target"]:
-            continue
-
-        cylinks.append({"data": {"source": link["source"], "target": link["target"]}})
-
-    return cynodes, cylinks
 
 
 def get_publications_by_degree(nodes, links):
