@@ -3,101 +3,24 @@ from datetime import datetime
 import requests_cache
 import numpy as np
 import pandas as pd
-from dash import Dash, html, dash_table, dcc, callback_context
+from dash import Dash, html, dcc, callback_context
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 import dash_cytoscape as cyto
 import plotly.express as px
+import logging
+
+from components.tables import BibiliographyTable, CitationTable
 from db import (
     initialize_database,
     get_all_bibliographies,
     create_bibliography,
     delete_bibliography
 )
-import logging
 from get_metadata import build_graph
 
 logging.basicConfig(filename="app.log", level=logging.INFO, filemode="w")
-
-def BibiliographyTable(df, id):
-    return dash_table.DataTable(
-        id=id,
-        columns=[
-            {
-                "name": "Title",
-                "id": "title",
-                "type": "text",
-                "presentation": "markdown",
-            },
-            {
-                "name": "Year",
-                "id": "year",
-            },
-            {
-                "name": "Authors",
-                "id": "author_names",
-            },
-            {
-                "name": "Citations",
-                "id": "citationCount",
-            },
-        ],
-        data=df.to_dict("records"),
-        style_cell={"textAlign": "left"},
-        page_action="native",
-        page_size=5,
-        style_cell_conditional=[
-            {
-                "if": {"column_id": "title"},
-                "maxWidth": "500px",
-                "overflow": "auto",
-                "textOverflow": "ellipsis",
-            },
-            {
-                "if": {"column_id": "author_names"},
-                "maxWidth": "150px",
-                "overflow": "auto",
-            },
-        ],
-        style_header={"fontWeight": "bold", "fontFamily": "Arial"},
-    )
-
-
-def CitationTable(df, id):
-    return dash_table.DataTable(
-        id=id,
-        columns=[
-            {
-                "name": "Title",
-                "id": "title",
-                "type": "text",
-                "presentation": "markdown",
-            },
-            {
-                "name": "Citations",
-                "id": "citationCount",
-            },
-            {
-                "name": "Degree",
-                "id": "degree",
-            },
-        ],
-        data=df.to_dict("records"),
-        style_cell={"textAlign": "left"},
-        page_action="native",
-        page_size=5,
-        style_cell_conditional=[
-            {
-                "if": {"column_id": "title"},
-                "maxWidth": "500px",
-                "overflow": "auto",
-                "textOverflow": "ellipsis",
-            }
-        ],
-        style_header={"fontWeight": "bold", "fontFamily": "Arial"},
-    )
-
 
 def build_graph_from_bibliography(bibliography): # TODO: bibliography_name
 
