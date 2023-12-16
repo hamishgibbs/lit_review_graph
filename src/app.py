@@ -11,7 +11,11 @@ import dash_cytoscape as cyto
 import plotly.express as px
 import logging
 
-from components.tables import BibiliographyTable, CitationTable
+from components.tables import (
+    BibiliographyTable, 
+    CitationTable, 
+    format_nodes_for_table
+)
 from db import (
     initialize_database,
     get_all_bibliographies,
@@ -23,6 +27,7 @@ from get_metadata import build_graph
 logging.basicConfig(filename="app.log", level=logging.INFO, filemode="w")
 
 def build_graph_from_bibliography(bibliography): # TODO: bibliography_name
+    """Builds nodes and links from a bibliography of DOIs"""
 
     session = requests_cache.CachedSession("lit_review_graph_cache")
 
@@ -33,19 +38,6 @@ def build_graph_from_bibliography(bibliography): # TODO: bibliography_name
     bibliography = [f"DOI:{citation.strip()}" for citation in bibliography]
 
     return build_graph(session, bibliography)
-
-
-def format_bibliography(nodes):
-
-    nodes = pd.DataFrame(nodes)
-    nodes = nodes[nodes["group"] == 1]
-    nodes["title"] = nodes.apply(lambda row: f"[{row['title']}]({row['url']})", axis=1)
-    nodes["author_names"] = nodes.apply(
-        lambda row: ", ".join(row["author_names"]), axis=1
-    )
-    nodes.sort_values(["citationCount"], ascending=False, inplace=True)
-
-    return nodes[["title", "year", "author_names", "citationCount"]]
 
 
 def build_cytoscape(nodes, links):
@@ -199,7 +191,7 @@ def main():
                 ]) for bib in bibliographies
             ], style={'width': '300px', 'overflowY': 'scroll', 'height': '500px'}),
             dcc.Markdown("## Bibliography:"),
-            BibiliographyTable(format_bibliography(nodes), "table-bibliography"),
+            BibiliographyTable(format_nodes_for_table(nodes), "table-bibliography"),
             dcc.Markdown(
                 [
                     f"## Graph metrics:",
